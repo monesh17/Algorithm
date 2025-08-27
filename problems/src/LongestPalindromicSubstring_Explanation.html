@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manacher's Algorithm - Longest Palindromic Substring</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .algorithm-steps {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+        
+        .java-keyword { color: #c678dd; }
+        .java-string { color: #98c379; }
+        .java-comment { color: #5c6370; font-style: italic; }
+        .java-number { color: #d19a66; }
+        
+        .example {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .visual-demo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 1.2em;
+        }
+        
+        .char-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 2px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            min-width: 30px;
+            background: #f5f5f5;
+        }
+        
+        .char-box.highlighted {
+            background: #ffeb3b;
+            border-color: #fbc02d;
+        }
+        
+        .char-box.center {
+            background: #4caf50;
+            color: white;
+            border-color: #388e3c;
+        }
+        
+        .complexity {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .iteration {
+            background: #fff8e1;
+            border: 2px solid #ffcc02;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .iteration-header {
+            background: #ffcc02;
+            color: #333;
+            padding: 10px;
+            margin: -20px -20px 15px -20px;
+            border-radius: 6px 6px 0 0;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .state-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            align-items: center;
+        }
+        
+        .state-box {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        
+        .state-box.center {
+            background: #4caf50;
+            color: white;
+            border-color: #388e3c;
+        }
+        
+        .state-box.right {
+            background: #2196f3;
+            color: white;
+            border-color: #1976d2;
+        }
+        
+        .state-box.current {
+            background: #ff9800;
+            color: white;
+            border-color: #f57c00;
+        }
+        
+        .char-array {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .char-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .char-box.mirror {
+            background: #e1bee7;
+            border-color: #9c27b0;
+        }
+        
+        .char-box.current-pos {
+            background: #ff9800;
+            color: white;
+            border-color: #f57c00;
+        }
+        
+        .char-box.expanding {
+            background: #ffcdd2;
+            border-color: #f44336;
+        }
+        
+        .p-value {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 2px;
+            font-family: monospace;
+        }
+        
+        .explanation-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .mirror-info {
+            background: #f3e5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Manacher's Algorithm</h1>
+        <p class="subtitle">Finding the Longest Palindromic Substring in Linear Time</p>
+        
+        <div class="section">
+            <h2>📋 What is Manacher's Algorithm?</h2>
+            <p>Manacher's algorithm is an elegant solution to find the longest palindromic substring in O(n) time complexity. It's much more efficient than the naive O(n²) or O(n³) approaches.</p>
+            
+            <div class="complexity">
+                <strong>⚡ Time Complexity:</strong> O(n)<br>
+                <strong>💾 Space Complexity:</strong> O(n)
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔧 How It Works</h2>
+            
+            <div class="algorithm-steps">
+                <h3>Algorithm Steps:</h3>
+                
+                <div class="step">
+                    <strong>Step 1: Preprocessing</strong>
+                    <p>Transform the string to handle even/odd length palindromes uniformly:</p>
+                    <div class="example">
+                        Original: "babad"<br>
+                        Preprocessed: "^#b#a#b#a#d#$"
+                    </div>
+                    <p>The '^' and '$' are sentinel characters to avoid bounds checking.</p>
+                </div>
+                
+                <div class="step">
+                    <strong>Step 2: Initialize Variables</strong>
+                    <ul>
+                        <li><code>P[i]</code>: Array storing palindrome radius at each position</li>
+                        <li><code>C</code>: Center of the rightmost palindrome found so far</li>
+                        <li><code>R</code>: Right boundary of the rightmost palindrome</li>
+                    </ul>
+                </div>
+                
+                <div class="step">
+                    <strong>Step 3: Main Algorithm</strong>
+                    <p>For each position i:</p>
+                    <ol>
+                        <li>Find the mirror position of i with respect to center C</li>
+                        <li>Use previously computed palindrome information to initialize P[i]</li>
+                        <li>Try to expand the palindrome centered at i</li>
+                        <li>Update C and R if the palindrome extends beyond R</li>
+                    </ol>
+                </div>
+                
+                <div class="step">
+                    <strong>Step 4: Extract Result</strong>
+                    <p>Find the position with maximum P[i] value and map it back to the original string.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Visual Example: "babad"</h2>
+            
+            <div class="example">
+                <h4>Step 1: Preprocessing</h4>
+                <div class="visual-demo">
+                    <div class="char-box">^</div>
+                    <div class="char-box">#</div>
+                    <div class="char-box">b</div>
+                    <div class="char-box">#</div>
+                    <div class="char-box">a</div>
+                    <div class="char-box">#</div>
+                    <div class="char-box">b</div>
+                    <div class="char-box">#</div>
+                    <div class="char-box">a</div>
+                    <div class="char-box">#</div>
+                    <div class="char-box">d</div>
+                    <div class="char-box">#</div>
+                    <div class="char-box">$</div>
+                </div>
+                
+                <h4>Step 2: P Array (Palindrome Radii)</h4>
+                <div class="table-container">
+                    <table>
+                        <tr>
+                            <th>Index</th>
+                            <th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
+                        </tr>
+                        <tr>
+                            <th>Character</th>
+                            <td>^</td><td>#</td><td>b</td><td>#</td><td>a</td><td>#</td><td>b</td><td>#</td><td>a</td><td>#</td><td>d</td><td>#</td><td>$</td>
+                        </tr>
+                        <tr>
+                            <th>P[i]</th>
+                            <td>0</td><td>0</td><td>1</td><td>0</td><td>3</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <p><strong>Explanation:</strong> P[4] = 3 means there's a palindrome of radius 3 centered at index 4 (character 'a'), which corresponds to "bab" in the original string.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔍 Step-by-Step Iteration Analysis</h2>
+            <p>Let's trace through each iteration of the algorithm for "babad" → "^#b#a#b#a#d#$"</p>
+            
+            <div class="iteration">
+                <div class="iteration-header">🚀 Initialization</div>
+                <div class="state-display">
+                    <div class="state-box center">C = 0</div>
+                    <div class="state-box right">R = 0</div>
+                    <div class="state-box">bestLen = 0</div>
+                    <div class="state-box">bestCenter = 0</div>
+                </div>
+                
+                <div class="char-array">
+                    <div class="char-item">
+                        <div class="char-box">^</div>
+                        <div class="p-value">P[0]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[1]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[2]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[3]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[4]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[5]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[6]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[7]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[8]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[9]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">d</div>
+                        <div class="p-value">P[10]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[11]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">$</div>
+                        <div class="p-value">P[12]=0</div>
+                    </div>
+                </div>
+                
+                <div class="explanation-box">
+                    All P array values are initialized to 0. We start from i = 1 and go till m-2 = 11.
+                </div>
+            </div>
+            
+            <div class="iteration">
+                <div class="iteration-header">📍 Iteration 1: i = 1 (character '#')</div>
+                <div class="state-display">
+                    <div class="state-box current">i = 1</div>
+                    <div class="state-box">mirror = 2×0-1 = -1</div>
+                    <div class="state-box center">C = 0</div>
+                    <div class="state-box right">R = 0</div>
+                </div>
+                
+                <div class="char-array">
+                    <div class="char-item">
+                        <div class="char-box">^</div>
+                        <div class="p-value">P[0]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box current-pos">#</div>
+                        <div class="p-value">P[1]=?</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[2]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[3]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[4]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[5]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[6]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[7]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[8]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[9]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">d</div>
+                        <div class="p-value">P[10]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[11]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">$</div>
+                        <div class="p-value">P[12]=0</div>
+                    </div>
+                </div>
+                
+                <div class="explanation-box">
+                    <strong>Since i ≥ R (1 ≥ 0):</strong> Skip the mirror optimization.<br>
+                    <strong>Expansion check:</strong> T[1+1+0] = T[2] = 'b' vs T[1-1-0] = T[0] = '^' → Not equal<br>
+                    <strong>Result:</strong> P[1] = 0, no expansion possible.
+                </div>
+                
+                <div class="state-display">
+                    <div class="state-box">P[1] = 0</div>
+                    <div class="state-box">i + P[i] = 1 + 0 = 1 ≤ R = 0? No</div>
+                    <div class="state-box center">C = 0 (unchanged)</div>
+                    <div class="state-box right">R = 0 (unchanged)</div>
+                </div>
+            </div>
+            
+            <div class="iteration">
+                <div class="iteration-header">📍 Iteration 2: i = 2 (character 'b')</div>
+                <div class="state-display">
+                    <div class="state-box current">i = 2</div>
+                    <div class="state-box">mirror = 2×0-2 = -2</div>
+                    <div class="state-box center">C = 0</div>
+                    <div class="state-box right">R = 0</div>
+                </div>
+                
+                <div class="char-array">
+                    <div class="char-item">
+                        <div class="char-box">^</div>
+                        <div class="p-value">P[0]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[1]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box current-pos">b</div>
+                        <div class="p-value">P[2]=?</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[3]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[4]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[5]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[6]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[7]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[8]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[9]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">d</div>
+                        <div class="p-value">P[10]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[11]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">$</div>
+                        <div class="p-value">P[12]=0</div>
+                    </div>
+                </div>
+                
+                <div class="explanation-box">
+                    <strong>Since i ≥ R (2 ≥ 0):</strong> Skip the mirror optimization.<br>
+                    <strong>Expansion check:</strong> T[2+1+0] = T[3] = '#' vs T[2-1-0] = T[1] = '#' → Equal! Expand.<br>
+                    <strong>Next check:</strong> T[2+1+1] = T[4] = 'a' vs T[2-1-1] = T[0] = '^' → Not equal.<br>
+                    <strong>Result:</strong> P[2] = 1 (palindrome "#b#")
+                </div>
+                
+                <div class="state-display">
+                    <div class="state-box">P[2] = 1</div>
+                    <div class="state-box">i + P[i] = 2 + 1 = 3 > R = 0? Yes!</div>
+                    <div class="state-box center">C = 2 (updated)</div>
+                    <div class="state-box right">R = 3 (updated)</div>
+                    <div class="state-box">bestLen = 1, bestCenter = 2</div>
+                </div>
+            </div>
+            
+            <div class="iteration">
+                <div class="iteration-header">📍 Iteration 3: i = 3 (character '#')</div>
+                <div class="state-display">
+                    <div class="state-box current">i = 3</div>
+                    <div class="state-box">mirror = 2×2-3 = 1</div>
+                    <div class="state-box center">C = 2</div>
+                    <div class="state-box right">R = 3</div>
+                </div>
+                
+                <div class="char-array">
+                    <div class="char-item">
+                        <div class="char-box">^</div>
+                        <div class="p-value">P[0]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box mirror">#</div>
+                        <div class="p-value">P[1]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box center">b</div>
+                        <div class="p-value">P[2]=1</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box current-pos">#</div>
+                        <div class="p-value">P[3]=?</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[4]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[5]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[6]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[7]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[8]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[9]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">d</div>
+                        <div class="p-value">P[10]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[11]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">$</div>
+                        <div class="p-value">P[12]=0</div>
+                    </div>
+                </div>
+                
+                <div class="mirror-info">
+                    Mirror position of i=3 across center C=2 is position 1 (highlighted in purple)
+                </div>
+                
+                <div class="explanation-box">
+                    <strong>Since i < R (3 < 3):</strong> False! i = R, so no mirror optimization.<br>
+                    <strong>Expansion check:</strong> T[3+1+0] = T[4] = 'a' vs T[3-1-0] = T[2] = 'b' → Not equal.<br>
+                    <strong>Result:</strong> P[3] = 0, no palindrome centered here.
+                </div>
+                
+                <div class="state-display">
+                    <div class="state-box">P[3] = 0</div>
+                    <div class="state-box">i + P[i] = 3 + 0 = 3 ≤ R = 3? Yes</div>
+                    <div class="state-box center">C = 2 (unchanged)</div>
+                    <div class="state-box right">R = 3 (unchanged)</div>
+                </div>
+            </div>
+            
+            <div class="iteration">
+                <div class="iteration-header">📍 Iteration 4: i = 4 (character 'a') - The Key Palindrome!</div>
+                <div class="state-display">
+                    <div class="state-box current">i = 4</div>
+                    <div class="state-box">mirror = 2×2-4 = 0</div>
+                    <div class="state-box center">C = 2</div>
+                    <div class="state-box right">R = 3</div>
+                </div>
+                
+                <div class="char-array">
+                    <div class="char-item">
+                        <div class="char-box mirror">^</div>
+                        <div class="p-value">P[0]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[1]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box center">b</div>
+                        <div class="p-value">P[2]=1</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[3]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box current-pos">a</div>
+                        <div class="p-value">P[4]=?</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[5]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[6]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[7]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[8]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[9]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">d</div>
+                        <div class="p-value">P[10]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[11]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">$</div>
+                        <div class="p-value">P[12]=0</div>
+                    </div>
+                </div>
+                
+                <div class="explanation-box">
+                    <strong>Since i ≥ R (4 ≥ 3):</strong> Skip the mirror optimization.<br>
+                    <strong>Expansion check 1:</strong> T[4+1+0] = T[5] = '#' vs T[4-1-0] = T[3] = '#' → Equal! P[4] = 1<br>
+                    <strong>Expansion check 2:</strong> T[4+1+1] = T[6] = 'b' vs T[4-1-1] = T[2] = 'b' → Equal! P[4] = 2<br>
+                    <strong>Expansion check 3:</strong> T[4+1+2] = T[7] = '#' vs T[4-1-2] = T[1] = '#' → Equal! P[4] = 3<br>
+                    <strong>Expansion check 4:</strong> T[4+1+3] = T[8] = 'a' vs T[4-1-3] = T[0] = '^' → Not equal!<br>
+                    <strong>Result:</strong> P[4] = 3 (largest palindrome: "#b#a#b#")
+                </div>
+                
+                <div class="state-display">
+                    <div class="state-box">P[4] = 3</div>
+                    <div class="state-box">i + P[i] = 4 + 3 = 7 > R = 3? Yes!</div>
+                    <div class="state-box center">C = 4 (updated)</div>
+                    <div class="state-box right">R = 7 (updated)</div>
+                    <div class="state-box">bestLen = 3, bestCenter = 4 (NEW BEST!)</div>
+                </div>
+            </div>
+            
+            <div class="iteration">
+                <div class="iteration-header">📍 Iteration 5: i = 5 (character '#')</div>
+                <div class="state-display">
+                    <div class="state-box current">i = 5</div>
+                    <div class="state-box">mirror = 2×4-5 = 3</div>
+                    <div class="state-box center">C = 4</div>
+                    <div class="state-box right">R = 7</div>
+                </div>
+                
+                <div class="char-array">
+                    <div class="char-item">
+                        <div class="char-box">^</div>
+                        <div class="p-value">P[0]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[1]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[2]=1</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box mirror">#</div>
+                        <div class="p-value">P[3]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box center">a</div>
+                        <div class="p-value">P[4]=3</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box current-pos">#</div>
+                        <div class="p-value">P[5]=?</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">b</div>
+                        <div class="p-value">P[6]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[7]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">a</div>
+                        <div class="p-value">P[8]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[9]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">d</div>
+                        <div class="p-value">P[10]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[11]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">$</div>
+                        <div class="p-value">P[12]=0</div>
+                    </div>
+                </div>
+                
+                <div class="mirror-info">
+                    Mirror position of i=5 across center C=4 is position 3. P[3] = 0.
+                </div>
+                
+                <div class="explanation-box">
+                    <strong>Since i < R (5 < 7):</strong> Use mirror optimization!<br>
+                    <strong>Mirror calculation:</strong> P[5] = min(R-i, P[mirror]) = min(7-5, P[3]) = min(2, 0) = 0<br>
+                    <strong>Expansion check:</strong> T[5+1+0] = T[6] = 'b' vs T[5-1-0] = T[4] = 'a' → Not equal.<br>
+                    <strong>Result:</strong> P[5] = 0 (no expansion possible)
+                </div>
+                
+                <div class="state-display">
+                    <div class="state-box">P[5] = 0</div>
+                    <div class="state-box">i + P[i] = 5 + 0 = 5 ≤ R = 7? Yes</div>
+                    <div class="state-box center">C = 4 (unchanged)</div>
+                    <div class="state-box right">R = 7 (unchanged)</div>
+                </div>
+            </div>
+            
+            <div class="iteration">
+                <div class="iteration-header">📍 Final Summary</div>
+                <div class="explanation-box">
+                    <strong>Continuing this process for remaining iterations...</strong><br>
+                    • i=6: P[6] = 1 (palindrome "#b#")<br>
+                    • i=7: P[7] = 0<br>
+                    • i=8: P[8] = 1 (palindrome "#a#")<br>
+                    • i=9: P[9] = 0<br>
+                    • i=10: P[10] = 1 (palindrome "#d#")<br>
+                    • i=11: P[11] = 0<br>
+                </div>
+                
+                <div class="state-display">
+                    <div class="state-box">Final bestLen = 3</div>
+                    <div class="state-box">Final bestCenter = 4</div>
+                    <div class="state-box">Mapping back: start = (4-3)/2 = 0, length = 3</div>
+                    <div class="state-box">Result: "bab"</div>
+                </div>
+                
+                <div class="char-array">
+                    <div class="char-item">
+                        <div class="char-box">^</div>
+                        <div class="p-value">P[0]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[1]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box highlighted">b</div>
+                        <div class="p-value">P[2]=1</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[3]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box center">a</div>
+                        <div class="p-value">P[4]=3</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[5]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box highlighted">b</div>
+                        <div class="p-value">P[6]=1</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[7]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box highlighted">a</div>
+                        <div class="p-value">P[8]=1</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[9]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box highlighted">d</div>
+                        <div class="p-value">P[10]=1</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">#</div>
+                        <div class="p-value">P[11]=0</div>
+                    </div>
+                    <div class="char-item">
+                        <div class="char-box">$</div>
+                        <div class="p-value">P[12]=0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>💻 Code Breakdown</h2>
+            
+            <h3>Preprocessing Function</h3>
+            <div class="code-block">
+<span class="java-keyword">private</span> <span class="java-keyword">char</span>[] preprocess(String s) {
+    StringBuilder sb = <span class="java-keyword">new</span> StringBuilder(<span class="java-number">2</span> * s.length() + <span class="java-number">3</span>);
+    sb.append(<span class="java-string">'^'</span>);  <span class="java-comment">// Start sentinel</span>
+    <span class="java-keyword">for</span> (<span class="java-keyword">int</span> i = <span class="java-number">0</span>; i < s.length(); i++) {
+        sb.append(<span class="java-string">'#'</span>).append(s.charAt(i));  <span class="java-comment">// Insert '#' between chars</span>
+    }
+    sb.append(<span class="java-string">"#$"</span>);  <span class="java-comment">// End with '#' and sentinel '$'</span>
+    <span class="java-keyword">return</span> sb.toString().toCharArray();
+}
+            </div>
+            
+            <h3>Main Algorithm</h3>
+            <div class="code-block">
+<span class="java-keyword">for</span> (<span class="java-keyword">int</span> i = <span class="java-number">1</span>; i < m - <span class="java-number">1</span>; i++) {
+    <span class="java-keyword">int</span> mirror = <span class="java-number">2</span> * C - i;  <span class="java-comment">// Mirror of i across center C</span>
+    
+    <span class="java-keyword">if</span> (i < R) {  <span class="java-comment">// If i is within right boundary</span>
+        P[i] = Math.min(R - i, P[mirror]);  <span class="java-comment">// Use symmetry</span>
+    }
+    
+    <span class="java-comment">// Try to expand palindrome centered at i</span>
+    <span class="java-keyword">while</span> (T[i + <span class="java-number">1</span> + P[i]] == T[i - <span class="java-number">1</span> - P[i]]) {
+        P[i]++;
+    }
+    
+    <span class="java-comment">// Update center and right boundary if expanded beyond R</span>
+    <span class="java-keyword">if</span> (i + P[i] > R) {
+        C = i; R = i + P[i];
+    }
+    
+    <span class="java-comment">// Track the best palindrome found</span>
+    <span class="java-keyword">if</span> (P[i] > bestLen) {
+        bestLen = P[i]; bestCenter = i;
+    }
+}
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Key Insights</h2>
+            
+            <div class="step">
+                <h4>1. Preprocessing Trick</h4>
+                <p>By inserting '#' between characters, we make all palindromes have odd length, simplifying the algorithm.</p>
+            </div>
+            
+            <div class="step">
+                <h4>2. Symmetry Exploitation</h4>
+                <p>If we're inside a known palindrome, we can use the palindrome property to avoid redundant comparisons.</p>
+            </div>
+            
+            <div class="step">
+                <h4>3. Linear Time Guarantee</h4>
+                <p>Each character is examined at most twice: once when expanding and once as part of a larger palindrome. This guarantees O(n) time complexity.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🚀 Example Output</h2>
+            <div class="example">
+                <strong>Input:</strong> "babad"<br>
+                <strong>Output:</strong> "bab" (or "aba", both are valid longest palindromes)
+                
+                <h4>Other Examples:</h4>
+                <ul>
+                    <li>"cbbd" → "bb"</li>
+                    <li>"racecar" → "racecar"</li>
+                    <li>"abcdef" → "a" (any single character)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔗 Applications</h2>
+            <ul>
+                <li><strong>DNA Analysis:</strong> Finding palindromic sequences in genetic data</li>
+                <li><strong>Text Processing:</strong> Identifying symmetric patterns in strings</li>
+                <li><strong>Competitive Programming:</strong> Efficient solution for palindrome-related problems</li>
+                <li><strong>Bioinformatics:</strong> Detecting hairpin structures in RNA</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>⚖️ Comparison with Other Approaches</h2>
+            <div class="table-container">
+                <table>
+                    <tr>
+                        <th>Approach</th>
+                        <th>Time Complexity</th>
+                        <th>Space Complexity</th>
+                        <th>Pros</th>
+                        <th>Cons</th>
+                    </tr>
+                    <tr>
+                        <td>Brute Force</td>
+                        <td>O(n³)</td>
+                        <td>O(1)</td>
+                        <td>Simple to understand</td>
+                        <td>Very slow for large inputs</td>
+                    </tr>
+                    <tr>
+                        <td>Expand Around Centers</td>
+                        <td>O(n²)</td>
+                        <td>O(1)</td>
+                        <td>Intuitive, low space</td>
+                        <td>Still quadratic time</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Manacher's</strong></td>
+                        <td><strong>O(n)</strong></td>
+                        <td>O(n)</td>
+                        <td>Optimal time complexity</td>
+                        <td>More complex to implement</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
