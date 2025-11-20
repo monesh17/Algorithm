@@ -2,42 +2,29 @@
 public class LongestPalindromicSubstring {
 
     public String longestPalindrome(String s) {
-        int n = s.length();
-        if (n < 2) return s;
+        if(s.length() < 2) return s;
 
-        char[] T = preprocess(s);    // "^#a#b#...#$
-        int m = T.length;
-
-        int[] P = new int[m];      // palindrome radii in T
-        int C = 0, R = 0;            // current center and rightmost boundary
-        int bestCenter = 0, bestLen = 0;
-
-        for (int i = 1; i < m - 1; i++) {
-            int mirror = 2 * C - i;
-
-            if (i < R) {
-                P[i] = Math.min(R - i, P[mirror]);
+        char[] newS = preprocess(s);
+        int[] palindrome = new int[newS.length];
+        int center=0,right=0;
+        int bestRad=0,bestCenter=0;
+        for(int i=1;i<newS.length-1;i++){
+            int mirror = 2 * center - i;
+            if(i<right)
+                palindrome[i] = Math.min(palindrome[mirror],right-i);
+            while(newS[i-1 - palindrome[i]] == newS[i+1 + palindrome[i]]) palindrome[i]++;
+            if(i+palindrome[i] > right){
+                right = i+palindrome[i];
+                center = i;
             }
-
-            // Try to expand beyond current radius
-            while (T[i + 1 + P[i]] == T[i - 1 - P[i]]) {
-                P[i]++;
-            }
-
-            // Update rightmost reach
-            if (i + P[i] > R) {
-                C = i;
-                R = i + P[i];
-            }
-
-            if (P[i] > bestLen) {
-                bestLen = P[i];
-                bestCenter = i;
-            }
+            if (palindrome[i] > bestRad) { bestRad = palindrome[i]; bestCenter = i; }
         }
+        int startInT = bestCenter - bestRad;
+        int endInT   = bestCenter + bestRad;
+        int start = (startInT - 1) / 2;
+        int end   = (endInT - 1) / 2;
+        return s.substring(start, end);
 
-        int start = (bestCenter - bestLen) / 2;      // map back to s
-        return s.substring(start, start + bestLen);
     }
 
     private char[] preprocess(String s) {
